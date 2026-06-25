@@ -1,9 +1,29 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+owner = User.find_or_create_by!(email: "owner@example.com") do |user|
+  user.name = "RV Owner"
+  user.password = "password"
+end
+
+hirer = User.find_or_create_by!(email: "hirer@example.com") do |user|
+  user.name = "RV Hirer"
+  user.password = "password"
+end
+
+RvListing.find_or_create_by!(title: "Cozy Class C Camper", user: owner) do |listing|
+  listing.description = "Perfect for weekend getaways with a full kitchen and sleeping for four."
+  listing.location = "Austin, TX"
+  listing.price_per_day = 120
+end
+
+RvListing.find_or_create_by!(title: "Luxury Motorhome", user: owner) do |listing|
+  listing.description = "Spacious motorhome with slide-outs, solar panels, and premium amenities."
+  listing.location = "Denver, CO"
+  listing.price_per_day = 250
+end
+
+RvListing.find_or_create_by!(title: "Compact Travel Trailer", user: hirer) do |listing|
+  listing.description = "Lightweight trailer ideal for couples exploring national parks."
+  listing.location = "Portland, OR"
+  listing.price_per_day = 85
+end
+
+puts "Seeded #{User.count} users and #{RvListing.count} listings"
