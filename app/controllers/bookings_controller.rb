@@ -24,7 +24,7 @@ class BookingsController < ApplicationController
     if @booking.save
       render json: @booking, status: :created
     else
-      render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@booking)
     end
   end
 
@@ -32,7 +32,7 @@ class BookingsController < ApplicationController
     if @booking.update(status: "confirmed")
       render json: @booking
     else
-      render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@booking)
     end
   end
 
@@ -40,7 +40,7 @@ class BookingsController < ApplicationController
     if @booking.update(status: "rejected")
       render json: @booking
     else
-      render json: { errors: @booking.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@booking)
     end
   end
 

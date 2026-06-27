@@ -17,7 +17,7 @@ class RvListingsController < ApplicationController
     if @listing.save
       render json: @listing, status: :created
     else
-      render json: { errors: @listing.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@listing)
     end
   end
 
@@ -25,7 +25,7 @@ class RvListingsController < ApplicationController
     if @listing.update(listing_params)
       render json: @listing
     else
-      render json: { errors: @listing.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@listing)
     end
   end
 

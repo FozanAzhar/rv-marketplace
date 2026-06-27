@@ -5,7 +5,7 @@ class AuthController < ApplicationController
     if user.save
       render json: user_response(user), status: :created
     else
-      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(user)
     end
   end
 
