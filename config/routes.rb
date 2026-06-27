@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   post "auth/signup", to: "auth#create"
   post "auth/login", to: "auth#login"
 
+  resources :listings, controller: "rv_listings"
+
   # Defines the root path route ("/")
   # root "posts#index"
 end
