@@ -1,107 +1,178 @@
-require "rails_helper"
+require "swagger_helper"
 
 RSpec.describe "RvListings", type: :request do
   let(:owner) { create(:user) }
   let(:other_user) { create(:user) }
   let!(:listing) { create(:rv_listing, user: owner, title: "Family Camper") }
 
-  describe "GET /listings" do
-    it "returns all listings without authentication" do
-      get "/listings"
+  path "/listings" do
+    get "List all listings" do
+      tags "Listings"
 
-      expect(response).to have_http_status(:ok)
-      expect(json_response).to be_an(Array)
-      expect(json_response.first["title"]).to eq("Family Camper")
-    end
-  end
+      response "200", "listings found" do
+        schema type: :array,
+          items: { "$ref" => "#/components/schemas/rv_listing" }
 
-  describe "GET /listings/:id" do
-    it "returns a single listing with owner" do
-      get "/listings/#{listing.id}"
-
-      expect(response).to have_http_status(:ok)
-      expect(json_response["title"]).to eq("Family Camper")
-      expect(json_response["user"]).to be_present
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data.first["title"]).to eq("Family Camper")
+        end
+      end
     end
 
-    it "returns not found for missing listing" do
-      get "/listings/0"
-
-      expect(response).to have_http_status(:not_found)
-      expect(json_response["error"]).to eq("Record not found")
-    end
-  end
-
-  describe "POST /listings" do
-    let(:listing_params) do
-      {
-        rv_listing: {
-          title: "New RV",
-          description: "Spacious",
-          location: "Denver",
-          price_per_day: 150
-        }
+    post "Create a listing" do
+      tags "Listings"
+      security [ bearer_auth: [] ]
+      consumes "application/json"
+      parameter name: "Authorization", in: :header, type: :string, description: "Bearer token"
+      parameter name: :rv_listing, in: :body, schema: {
+        type: :object,
+        properties: {
+          rv_listing: {
+            type: :object,
+            properties: {
+              title: { type: :string },
+              description: { type: :string },
+              location: { type: :string },
+              price_per_day: { type: :number }
+            },
+            required: %w[title description location price_per_day]
+          }
+        },
+        required: [ "rv_listing" ]
       }
-    end
 
-    it "creates a listing for the authenticated user" do
-      post "/listings", params: listing_params, headers: auth_headers(owner)
+      response "201", "listing created" do
+        schema "$ref" => "#/components/schemas/rv_listing"
 
-      expect(response).to have_http_status(:created)
-      expect(json_response["title"]).to eq("New RV")
-      expect(json_response["user_id"]).to eq(owner.id)
-    end
+        let(:Authorization) { auth_headers(owner)["Authorization"] }
+        let(:rv_listing) do
+          {
+            rv_listing: {
+              title: "New RV",
+              description: "Spacious",
+              location: "Denver",
+              price_per_day: 150
+            }
+          }
+        end
 
-    it "returns unauthorized without a token" do
-      post "/listings", params: listing_params
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["user_id"]).to eq(owner.id)
+        end
+      end
 
-      expect(response).to have_http_status(:unauthorized)
-      expect(json_response["error"]).to eq("Unauthorized")
-    end
+      response "401", "unauthorized" do
+        schema "$ref" => "#/components/schemas/error"
 
-    it "returns unauthorized with an invalid token" do
-      post "/listings",
-        params: listing_params,
-        headers: { "Authorization" => "Bearer invalid.token" }
+        let(:Authorization) { nil }
+        let(:rv_listing) do
+          {
+            rv_listing: {
+              title: "New RV",
+              description: "Spacious",
+              location: "Denver",
+              price_per_day: 150
+            }
+          }
+        end
 
-      expect(response).to have_http_status(:unauthorized)
-      expect(json_response["error"]).to eq("Unauthorized")
-    end
-  end
-
-  describe "PATCH /listings/:id" do
-    it "allows the owner to update" do
-      patch "/listings/#{listing.id}",
-        params: { rv_listing: { title: "Updated Camper" } },
-        headers: auth_headers(owner)
-
-      expect(response).to have_http_status(:ok)
-      expect(json_response["title"]).to eq("Updated Camper")
-    end
-
-    it "forbids non-owners" do
-      patch "/listings/#{listing.id}",
-        params: { rv_listing: { title: "Hijacked" } },
-        headers: auth_headers(other_user)
-
-      expect(response).to have_http_status(:forbidden)
-      expect(json_response["error"]).to eq("You are not authorized to perform this action")
+        run_test!
+      end
     end
   end
 
-  describe "DELETE /listings/:id" do
-    it "allows the owner to delete" do
-      delete "/listings/#{listing.id}", headers: auth_headers(owner)
+  path "/listings/{id}" do
+    parameter name: :id, in: :path, type: :integer, description: "Listing ID"
 
-      expect(response).to have_http_status(:no_content)
-      expect(RvListing.find_by(id: listing.id)).to be_nil
+    get "Show a listing" do
+      tags "Listings"
+
+      response "200", "listing found" do
+        schema "$ref" => "#/components/schemas/rv_listing"
+
+        let(:id) { listing.id }
+
+        run_test! do |response|
+          data = JSON.parse(response.body)
+          expect(data["user"]).to be_present
+        end
+      end
+
+      response "404", "not found" do
+        schema "$ref" => "#/components/schemas/error"
+
+        let(:id) { 0 }
+
+        run_test!
+      end
     end
 
-    it "forbids non-owners" do
-      delete "/listings/#{listing.id}", headers: auth_headers(other_user)
+    patch "Update a listing" do
+      tags "Listings"
+      security [ bearer_auth: [] ]
+      consumes "application/json"
+      parameter name: "Authorization", in: :header, type: :string, description: "Bearer token"
+      parameter name: :rv_listing, in: :body, schema: {
+        type: :object,
+        properties: {
+          rv_listing: {
+            type: :object,
+            properties: {
+              title: { type: :string },
+              description: { type: :string },
+              location: { type: :string },
+              price_per_day: { type: :number }
+            }
+          }
+        },
+        required: [ "rv_listing" ]
+      }
 
-      expect(response).to have_http_status(:forbidden)
-      expect(RvListing.find_by(id: listing.id)).to be_present
+      response "200", "listing updated" do
+        schema "$ref" => "#/components/schemas/rv_listing"
+
+        let(:id) { listing.id }
+        let(:Authorization) { auth_headers(owner)["Authorization"] }
+        let(:rv_listing) { { rv_listing: { title: "Updated Camper" } } }
+
+        run_test!
+      end
+
+      response "403", "forbidden" do
+        schema "$ref" => "#/components/schemas/error"
+
+        let(:id) { listing.id }
+        let(:Authorization) { auth_headers(other_user)["Authorization"] }
+        let(:rv_listing) { { rv_listing: { title: "Hijacked" } } }
+
+        run_test!
+      end
+    end
+
+    delete "Delete a listing" do
+      tags "Listings"
+      security [ bearer_auth: [] ]
+      parameter name: "Authorization", in: :header, type: :string, description: "Bearer token"
+
+      response "204", "listing deleted" do
+        let(:id) { listing.id }
+        let(:Authorization) { auth_headers(owner)["Authorization"] }
+
+        run_test! do
+          expect(RvListing.find_by(id: listing.id)).to be_nil
+        end
+      end
+
+      response "403", "forbidden" do
+        schema "$ref" => "#/components/schemas/error"
+
+        let(:id) { listing.id }
+        let(:Authorization) { auth_headers(other_user)["Authorization"] }
+
+        run_test!
+      end
     end
   end
 end
