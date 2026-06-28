@@ -1,5 +1,6 @@
 # Booking requests and owner approval flow (pending → confirmed/rejected).
-class BookingsController < ApplicationController  before_action :authenticate_user!
+class BookingsController < ApplicationController
+  before_action :authenticate_user!
   before_action :set_listing, only: [ :create ]
   before_action :set_booking, only: [ :confirm, :reject ]
   before_action :authorize_listing_owner!, only: [ :confirm, :reject ]
@@ -7,7 +8,8 @@ class BookingsController < ApplicationController  before_action :authenticate_us
 
   def index
     # Return bookings where the user is the hirer OR the listing owner.
-    bookings = Booking.joins(:rv_listing)      .where(user_id: current_user.id)
+    bookings = Booking.joins(:rv_listing)
+      .where(user_id: current_user.id)
       .or(Booking.joins(:rv_listing).where(rv_listings: { user_id: current_user.id }))
 
     render json: bookings, include: [ :user, :rv_listing ]
@@ -15,7 +17,8 @@ class BookingsController < ApplicationController  before_action :authenticate_us
 
   def create
     # Hirers only — owners cannot book their own listings (test requirement).
-    if @listing.user_id == current_user.id      return render json: { error: "You cannot book your own listing" }, status: :forbidden
+    if @listing.user_id == current_user.id
+      return render json: { error: "You cannot book your own listing" }, status: :forbidden
     end
 
     @booking = @listing.bookings.build(booking_params)

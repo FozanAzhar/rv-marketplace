@@ -1,5 +1,6 @@
-# Local development stack (see Dockerfile.dev).
-services:  db:
+# Local development stack (see Dockerfile.dev). Production uses Dockerfile + Kamal.
+services:
+  db:
     image: postgres:16
     restart: unless-stopped
     volumes:
@@ -19,9 +20,11 @@ services:  db:
       dockerfile: Dockerfile.dev
     restart: unless-stopped
     # Auto-migrate on boot, then start the API on port 3000.
-    command: bash -c "bundle exec rails db:prepare && bundle exec rails server -b 0.0.0.0"    volumes:
+    command: bash -c "bundle exec rails db:prepare && bundle exec rails server -b 0.0.0.0"
+    volumes:
       - .:/rails
       - bundle:/usr/local/bundle
+      # Keep Linux bin stubs from the image (Windows mounts use ruby.exe shebangs).
       - /rails/bin
     ports:
       - "3000:3000"
