@@ -93,6 +93,8 @@ All responses are JSON. Protected routes need an `Authorization: Bearer <token>`
 | GET | `/listings/:id/messages` | Yes | View messages (owner, hirer, or participant) |
 | POST | `/listings/:id/messages` | Yes | Send a message about a listing |
 
+> **Note — Messaging:** A minimal messaging API was added so owners and hirers can communicate about a specific listing. Any logged-in user can send a message; reading the thread is limited to the listing owner, anyone with a booking on that listing, or users who have already messaged about it. See the **Messages** section in [Swagger UI](http://localhost:3000/api-docs) for examples.
+
 For request/response examples, use the [Swagger UI](http://localhost:3000/api-docs).
 
 ### Example: sign up and create a listing

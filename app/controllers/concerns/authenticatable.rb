@@ -1,5 +1,5 @@
-module Authenticatable
-  extend ActiveSupport::Concern
+# Decodes Bearer tokens from the Authorization header for protected endpoints.
+module Authenticatable  extend ActiveSupport::Concern
 
   private
 

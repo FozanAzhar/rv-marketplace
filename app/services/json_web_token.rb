@@ -1,3 +1,4 @@
+# Shared JWT helpers used by Authenticatable and AuthController.
 class JsonWebToken
   SECRET_KEY = Rails.application.secret_key_base
 

@@ -12,7 +12,8 @@ Rails.application.configure do
   # Show full error reports.
   config.consider_all_requests_local = true
 
-  # Serve public/index.html and other static assets in this API-only app.
+  # API-only apps disable this by default; we enable it to serve the bonus
+  # Tailwind landing page at public/index.html during local development.
   config.public_file_server.enabled = true
 
   # Enable server timing.

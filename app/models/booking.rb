@@ -1,4 +1,5 @@
 class Booking < ApplicationRecord
+  # Owner confirms or rejects via PATCH /bookings/:id/confirm|reject
   STATUSES = %w[pending confirmed rejected].freeze
 
   belongs_to :user

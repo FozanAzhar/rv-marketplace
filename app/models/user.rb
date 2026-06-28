@@ -1,3 +1,4 @@
+# A user can act as both an RV owner (listings) and a hirer (bookings/messages).
 class User < ApplicationRecord
   has_secure_password
 

@@ -1,5 +1,6 @@
-owner = User.find_or_create_by!(email: "owner@example.com") do |user|
-  user.name = "RV Owner"
+# Demo data for local testing and the landing page (GET /listings).
+# Login as owner@example.com or hirer@example.com (password: password).
+owner = User.find_or_create_by!(email: "owner@example.com") do |user|  user.name = "RV Owner"
   user.password = "password"
 end
 

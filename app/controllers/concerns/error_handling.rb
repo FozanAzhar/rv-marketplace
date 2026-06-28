@@ -1,5 +1,5 @@
-module ErrorHandling
-  extend ActiveSupport::Concern
+# Consistent JSON error responses across all API controllers.
+module ErrorHandling  extend ActiveSupport::Concern
 
   included do
     rescue_from ActiveRecord::RecordNotFound, with: :record_not_found

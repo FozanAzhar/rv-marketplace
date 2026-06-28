@@ -1,5 +1,6 @@
-class AuthController < ApplicationController
-  def create
+# Token-based authentication (JWT). Signup/login return a Bearer token;
+# protected endpoints read it from the Authorization header.
+class AuthController < ApplicationController  def create
     user = User.new(user_params)
 
     if user.save

@@ -1,5 +1,6 @@
-class RvListingsController < ApplicationController
-  before_action :authenticate_user!, only: [ :create, :update, :destroy ]
+# Listing CRUD. Browse is public; create/update/delete require auth and
+# ownership checks (see authorize_owner!).
+class RvListingsController < ApplicationController  before_action :authenticate_user!, only: [ :create, :update, :destroy ]
   before_action :set_listing, only: [ :show, :update, :destroy ]
   before_action :authorize_owner!, only: [ :update, :destroy ]
 
