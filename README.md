@@ -1,14 +1,61 @@
-# RV Marketplace API
+# RV Marketplace
 
-Rails 8 API-only application for listing RVs, managing bookings, and JWT authentication.
+A REST API for renting RVs. Owners post listings, renters request bookings, and owners approve or decline those requests.
 
-## Requirements
+Built with **Rails 8** (API-only), **PostgreSQL**, and **JWT** authentication.
 
-- Ruby 4.0.5 (see [`.ruby-version`](.ruby-version))
-- PostgreSQL 16+
-- Docker and Docker Compose (optional, for containerized local development)
+## What you can do
+
+- **Sign up / log in** — get a JWT token to use on protected routes
+- **Browse listings** — anyone can view available RVs
+- **Post a listing** — logged-in users can create, edit, and delete their own RVs
+- **Book an RV** — renters request dates; owners confirm or reject the booking
+
+There is also a simple landing page at [http://localhost:3000](http://localhost:3000) and interactive API docs at [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
+
+## Quick start (Docker)
+
+**Requirements:** Docker and Docker Compose
+
+1. Create a `.env` file with your Rails master key (copy the value from `config/master.key`):
+
+   ```
+   RAILS_MASTER_KEY=your_key_here
+   ```
+
+   Or copy the example: `cp .env.example .env`
+
+2. Start everything:
+
+   ```bash
+   docker compose up --build
+   ```
+
+3. Open the app:
+
+   | What | URL |
+   |------|-----|
+   | Landing page | http://localhost:3000 |
+   | Health check | http://localhost:3000/up |
+   | Browse listings (JSON) | http://localhost:3000/listings |
+   | API docs (Swagger) | http://localhost:3000/api-docs |
+
+On first boot, the app creates and migrates the database automatically.
+
+### Handy Docker commands
+
+```bash
+docker compose up -d --build   # run in the background
+docker compose logs -f web     # follow logs
+docker compose exec web bin/rails console
+docker compose exec web bundle exec rspec
+docker compose down            # stop
+docker compose down -v         # stop and wipe the database
+```
 
 ## Local setup (without Docker)
+
+**Requirements:** Ruby 4.0.5, PostgreSQL 16+
 
 ```bash
 bundle install
@@ -16,9 +63,7 @@ bin/rails db:create db:migrate
 bin/rails server
 ```
 
-Health check: [http://localhost:3000/up](http://localhost:3000/up)
-
-API docs (Swagger UI): [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+Then visit http://localhost:3000/up to confirm the server is running.
 
 ### Tests
 
@@ -27,76 +72,57 @@ bin/rails db:test:prepare
 bundle exec rspec
 ```
 
-## Docker Compose (local development)
+## API overview
 
-Run the app and PostgreSQL with a single command. The production [`Dockerfile`](Dockerfile) is unchanged; development uses [`Dockerfile.dev`](Dockerfile.dev).
+All responses are JSON. Protected routes need an `Authorization: Bearer <token>` header (returned on signup and login).
 
-### 1. Configure environment
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/auth/signup` | No | Create an account |
+| POST | `/auth/login` | No | Log in |
+| GET | `/listings` | No | List all RVs |
+| GET | `/listings/:id` | No | Get one listing |
+| POST | `/listings` | Yes | Create a listing |
+| PATCH | `/listings/:id` | Yes | Update your listing |
+| DELETE | `/listings/:id` | Yes | Delete your listing |
+| POST | `/listings/:id/bookings` | Yes | Request a booking |
+| GET | `/bookings` | Yes | Your bookings (as renter or owner) |
+| PATCH | `/bookings/:id/confirm` | Yes | Owner confirms a pending booking |
+| PATCH | `/bookings/:id/reject` | Yes | Owner rejects a pending booking |
 
-Copy the example env file and set your Rails master key (the value in `config/master.key`):
+For request/response examples, use the [Swagger UI](http://localhost:3000/api-docs).
 
-```bash
-cp .env.example .env
-```
-
-Edit `.env`:
-
-```
-RAILS_MASTER_KEY=your_master_key_here
-```
-
-Docker Compose reads `.env` automatically.
-
-### 2. Start services
-
-```bash
-docker compose up --build
-```
-
-On first boot, the web container runs `db:prepare` (creates and migrates the database) and starts the Rails server on port 3000.
-
-### 3. Verify the API
-
-- Health: [http://localhost:3000/up](http://localhost:3000/up)
-- Listings: [http://localhost:3000/listings](http://localhost:3000/listings)
-- Swagger UI: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-
-### Useful commands
+### Example: sign up and create a listing
 
 ```bash
-# Run in the background
-docker compose up -d --build
+# Sign up
+curl -X POST http://localhost:3000/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Jane","email":"jane@example.com","password":"secret","password_confirmation":"secret"}'
 
-# View logs
-docker compose logs -f web
-
-# Open a Rails console
-docker compose exec web bin/rails console
-
-# Run the test suite
-docker compose exec web bundle exec rspec
-
-# Stop containers
-docker compose down
-
-# Stop and remove database volume (fresh DB)
-docker compose down -v
+# Use the token from the response
+curl -X POST http://localhost:3000/listings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"rv_listing":{"title":"Cozy Camper","description":"Sleeps 4","location":"Denver, CO","price_per_day":120}}'
 ```
 
-### Services
+## Project structure
 
-| Service | Image / build | Port | Purpose |
-|---------|---------------|------|---------|
-| `web`   | `Dockerfile.dev` | 3000 | Rails API |
-| `db`    | `postgres:16`    | (internal only) | PostgreSQL — not published to the host, so it won't conflict with a local Postgres on port 5432 |
+```
+app/
+  controllers/   # API endpoints (auth, listings, bookings)
+  models/        # User, RvListing, Booking
+public/
+  index.html     # Landing page
+swagger/         # OpenAPI spec for /api-docs
+```
 
-The web service connects via `DATABASE_URL=postgres://postgres:postgres@db:5432/rv_marketplace_development` on the Docker network.
+## Production
 
-## Production Docker
-
-The [`Dockerfile`](Dockerfile) targets production deployment (e.g. with Kamal). Build and run manually:
+The [`Dockerfile`](Dockerfile) is for production (e.g. Kamal). The [`Dockerfile.dev`](Dockerfile.dev) and [`docker-compose.yml`](docker-compose.yml) are for local development only.
 
 ```bash
 docker build -t rv_marketplace .
-docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name rv_marketplace rv_marketplace
+docker run -d -p 80:80 -e RAILS_MASTER_KEY=<your_key> --name rv_marketplace rv_marketplace
 ```
