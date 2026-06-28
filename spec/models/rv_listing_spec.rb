@@ -12,6 +12,12 @@ RSpec.describe RvListing, type: :model do
       booking = create(:booking, rv_listing: listing)
       expect(listing.bookings).to include(booking)
     end
+
+    it "has many messages" do
+      listing = create(:rv_listing)
+      message = create(:message, rv_listing: listing)
+      expect(listing.messages).to include(message)
+    end
   end
 
   describe "validations" do

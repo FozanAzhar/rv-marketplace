@@ -3,7 +3,8 @@ openapi: 3.0.1
 info:
   title: RV Marketplace API
   version: v1
-  description: REST API for listing RVs, requesting bookings, and managing reservations.
+  description: REST API for listing RVs, messaging about listings, requesting bookings,
+    and managing reservations.
 paths:
   "/auth/signup":
     post:
@@ -182,6 +183,67 @@ paths:
           description: booking rejected
         '403':
           description: forbidden
+  "/listings/{listing_id}/messages":
+    parameters:
+    - name: listing_id
+      in: path
+      description: Listing ID
+      required: true
+      schema:
+        type: integer
+    get:
+      summary: List messages for a listing
+      tags:
+      - Messages
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer token
+        schema:
+          type: string
+      responses:
+        '200':
+          description: messages found
+        '403':
+          description: forbidden
+        '401':
+          description: unauthorized
+    post:
+      summary: Send a message about a listing
+      tags:
+      - Messages
+      security:
+      - bearer_auth: []
+      parameters:
+      - name: Authorization
+        in: header
+        description: Bearer token
+        schema:
+          type: string
+      responses:
+        '201':
+          description: message created
+        '422':
+          description: validation error
+        '401':
+          description: unauthorized
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                  required:
+                  - content
+              required:
+              - message
   "/listings":
     get:
       summary: List all listings
@@ -374,6 +436,25 @@ components:
         updated_at:
           type: string
           format: date-time
+    message:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        user_id:
+          type: integer
+        rv_listing_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        user:
+          "$ref": "#/components/schemas/user"
     error:
       type: object
       properties:

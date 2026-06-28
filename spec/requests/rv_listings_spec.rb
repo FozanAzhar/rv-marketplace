@@ -51,7 +51,7 @@ RSpec.describe "RvListings", type: :request do
             rv_listing: {
               title: "New RV",
               description: "Spacious",
-              location: "Denver",
+              location: "Melbourne, VIC",
               price_per_day: 150
             }
           }
@@ -72,7 +72,7 @@ RSpec.describe "RvListings", type: :request do
             rv_listing: {
               title: "New RV",
               description: "Spacious",
-              location: "Denver",
+              location: "Melbourne, VIC",
               price_per_day: 150
             }
           }

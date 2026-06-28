@@ -11,7 +11,7 @@ RSpec.configure do |config|
       info: {
         title: "RV Marketplace API",
         version: "v1",
-        description: "REST API for listing RVs, requesting bookings, and managing reservations."
+        description: "REST API for listing RVs, messaging about listings, requesting bookings, and managing reservations."
       },
       paths: {},
       servers: [
@@ -64,6 +64,18 @@ RSpec.configure do |config|
               rv_listing_id: { type: :integer },
               created_at: { type: :string, format: :"date-time" },
               updated_at: { type: :string, format: :"date-time" }
+            }
+          },
+          message: {
+            type: :object,
+            properties: {
+              id: { type: :integer },
+              content: { type: :string },
+              user_id: { type: :integer },
+              rv_listing_id: { type: :integer },
+              created_at: { type: :string, format: :"date-time" },
+              updated_at: { type: :string, format: :"date-time" },
+              user: { "$ref": "#/components/schemas/user" }
             }
           },
           error: {

@@ -10,6 +10,7 @@ Built with **Rails 8** (API-only), **PostgreSQL**, and **JWT** authentication.
 - **Browse listings** — anyone can view available RVs
 - **Post a listing** — logged-in users can create, edit, and delete their own RVs
 - **Book an RV** — renters request dates; owners confirm or reject the booking
+- **Message about a listing** — authenticated users can ask questions; owners and participants can read the thread
 
 There is also a simple landing page at [http://localhost:3000](http://localhost:3000) and interactive API docs at [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
 
@@ -89,6 +90,8 @@ All responses are JSON. Protected routes need an `Authorization: Bearer <token>`
 | GET | `/bookings` | Yes | Your bookings (as renter or owner) |
 | PATCH | `/bookings/:id/confirm` | Yes | Owner confirms a pending booking |
 | PATCH | `/bookings/:id/reject` | Yes | Owner rejects a pending booking |
+| GET | `/listings/:id/messages` | Yes | View messages (owner, hirer, or participant) |
+| POST | `/listings/:id/messages` | Yes | Send a message about a listing |
 
 For request/response examples, use the [Swagger UI](http://localhost:3000/api-docs).
 
@@ -104,15 +107,15 @@ curl -X POST http://localhost:3000/auth/signup \
 curl -X POST http://localhost:3000/listings \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{"rv_listing":{"title":"Cozy Camper","description":"Sleeps 4","location":"Denver, CO","price_per_day":120}}'
+  -d '{"rv_listing":{"title":"Cozy Camper","description":"Sleeps 4","location":"Byron Bay, NSW","price_per_day":120}}'
 ```
 
 ## Project structure
 
 ```
 app/
-  controllers/   # API endpoints (auth, listings, bookings)
-  models/        # User, RvListing, Booking
+  controllers/   # API endpoints (auth, listings, bookings, messages)
+  models/        # User, RvListing, Booking, Message
 public/
   index.html     # Landing page
 swagger/         # OpenAPI spec for /api-docs

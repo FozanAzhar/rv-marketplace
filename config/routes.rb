@@ -12,6 +12,7 @@ Rails.application.routes.draw do
 
   resources :listings, controller: "rv_listings" do
     resources :bookings, only: [ :create ]
+    resources :messages, only: [ :index, :create ]
   end
 
   resources :bookings, only: [ :index ] do

@@ -10,19 +10,19 @@ end
 
 RvListing.find_or_create_by!(title: "Cozy Class C Camper", user: owner) do |listing|
   listing.description = "Perfect for weekend getaways with a full kitchen and sleeping for four."
-  listing.location = "Austin, TX"
+  listing.location = "Byron Bay, NSW"
   listing.price_per_day = 120
 end
 
 RvListing.find_or_create_by!(title: "Luxury Motorhome", user: owner) do |listing|
   listing.description = "Spacious motorhome with slide-outs, solar panels, and premium amenities."
-  listing.location = "Denver, CO"
+  listing.location = "Gold Coast, QLD"
   listing.price_per_day = 250
 end
 
 RvListing.find_or_create_by!(title: "Compact Travel Trailer", user: hirer) do |listing|
   listing.description = "Lightweight trailer ideal for couples exploring national parks."
-  listing.location = "Portland, OR"
+  listing.location = "Cairns, QLD"
   listing.price_per_day = 85
 end
 
